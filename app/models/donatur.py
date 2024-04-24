@@ -15,4 +15,4 @@ class Donatur(db.Model):
         }
 
     def __repr__(self):
-        return f'<Admin{self.email}>'
+        return f'<Donatur{self.email}>'

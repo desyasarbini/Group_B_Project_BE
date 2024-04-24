@@ -1,4 +1,5 @@
 from app.utils.database import db
+from sqlalchemy.orm import relationship
 import bcrypt
 
 class Admin(db.Model):
@@ -7,6 +8,8 @@ class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False)
     password = db.Column(db.String(50), nullable=False)
+
+    # project = relationship("Project", cascade="all-delete-orphan")
 
     def serialize(self, full=True):
         if full:
@@ -22,7 +25,7 @@ class Admin(db.Model):
             }
 
     def __repr__(self):
-        return f'<User{self.username}>'
+        return f'<Admin{self.username}>'
 
     # u/ encrypt password
     def set_password(self, password):

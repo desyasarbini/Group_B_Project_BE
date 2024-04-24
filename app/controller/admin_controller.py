@@ -2,7 +2,7 @@ from app.models.admin import Admin
 from app.utils.database import db
 from app.utils.api_response import api_response
 from flask import jsonify, request
-from flask_jwt_extended import jwt_required, create_access_token
+from flask_jwt_extended import get_jwt_identity, create_access_token
 
 def get_admin(id):
     db.session.begin()
@@ -75,29 +75,18 @@ def do_admin_login():
         db.session.rollback()
         return {"message": "Login failed"}
 
-# protected route
-@jwt_required()
 def protected_route():
-    try:
-        admin_id = request.jwt_identity
-        admin = db.session.query(Admin).filter(Admin.id == admin_id).first()
-        
-        if admin:
-            return api_response(
-                status_code = 200,
-                message = "access granted",
-                data = {"admin": admin.serialize(full = False)}
-            )
-        else:
-            return api_response(
-                status_code = 404,
-                message = "admin not found",
-                data = {}
-            )
-    except Exception as e:
-        print(f"Error accessing protected route: {e}")
-        return api_response(
-            status_code = 500,
-            message = "Internal Server Error",
-            data = {}
-        )
+    current_user = get_jwt_identity()
+    return api_response(
+        status_code = 200,
+        message = {"login as id": current_user},
+        data = {}
+    )
+
+def admin_logout():
+    current_user = get_jwt_identity()
+    return api_response(
+        status_code = 200,
+        message = {"Logged out successfully for id": current_user},
+        data = {}
+    )
