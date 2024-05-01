@@ -1,15 +1,19 @@
-from app.utils.database import db
-from sqlalchemy.orm import relationship
+# from flask import current_app as app
+# from app.utils.database import db
+from app.models.base import Base
+from sqlalchemy.orm import relationship, mapped_column
+from sqlalchemy import String, Integer
+# from sqlalchemy.sql import func
 import bcrypt
 
-class Admin(db.Model):
+class Admin(Base):
     __tablename__ = "admin"
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), nullable=False)
-    password = db.Column(db.String(50), nullable=False)
+    id = mapped_column(Integer, primary_key=True, autoincrement=True)
+    username = mapped_column(String(20), nullable=False, unique=True)
+    password = mapped_column(String(20), nullable=False)
 
-    # project = relationship("Project", cascade="all-delete-orphan")
+    projects = relationship("Project", back_populates="admin")
 
     def serialize(self, full=True):
         if full:

@@ -1,11 +1,16 @@
-from app.utils.database import db
+# from app.utils.database import db
+from app.models.base import Base
+from sqlalchemy.orm import relationship, mapped_column
+from sqlalchemy import String, Integer
 
-class Donatur(db.Model):
+class Donatur(Base):
     __tablename__ = "donatur"
 
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), nullable=False)
-    phone_number = db.Column(db.String(50), nullable=False)
+    id = mapped_column(Integer, primary_key=True, autoincrement=True)
+    email = mapped_column(String(255), nullable=False)
+    phone_number = mapped_column(String(50), nullable=False)
+
+    donations = relationship("Donation", back_populates="from_donatur")
 
     def serialize(self):
         return {

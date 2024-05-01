@@ -3,34 +3,24 @@ from app.utils.database import db
 from app.utils.api_response import api_response
 from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity, create_access_token
-
-def get_admin(id):
-    db.session.begin()
-    try:
-        admin = db.session.query(Admin).filter((Admin.id==id)).first()
-        if admin:
-            return jsonify(admin.serialize(full=True))
-        else:
-            return jsonify({
-                "message" : 'admin not register yet' 
-            })
-    except Exception as e:
-        print(f"Error during registration: {e}")
-        db.session.rollback()
-        return {"message": "admin not found"}
-
+from app.connector.sql_connector import engine
+from sqlalchemy.orm import sessionmaker
 
 def create_admin():
-    username = request.form['username']
-    password = request.form['password']
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
 
     new_admin = Admin(username = username)
     new_admin.set_password(password)
 
-    db.session.begin()
+    connection = engine.connect()
+    Session = sessionmaker(connection)
+    session = Session()
+
+    session.begin()
     try:
-        db.session.add(new_admin)
-        db.session.commit()
+        session.add(new_admin)
+        session.commit()
     except Exception as e:
         print(f"error during registration: {e}")
         db.session.rollback()
@@ -42,12 +32,16 @@ def create_admin():
     )
 
 def do_admin_login():
-    username = request.form['username']
-    password = request.form['password']
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
 
-    db.session.begin()
+    connection = engine.connect()
+    Session = sessionmaker(connection)
+    session = Session()
+
+    session.begin()
     try:
-        admin = db.session.query(Admin).filter(Admin.username == username).first()
+        admin = session.query(Admin).filter(Admin.username == username).first()
         
         if admin == None:
             return api_response(
@@ -70,18 +64,29 @@ def do_admin_login():
             message = "Login successfully",
             data = {"admin": admin.serialize(full = False), "access_token": access_token}
         )
-    except Exception as e:
-        print(f"Error during login: {e}")
-        db.session.rollback()
-        return {"message": "Login failed"}
 
-def protected_route():
-    current_user = get_jwt_identity()
-    return api_response(
-        status_code = 200,
-        message = {"login as id": current_user},
-        data = {}
-    )
+    except Exception as e:
+        session.rollback()
+        return jsonify(f"login failed: {e}")
+
+def get_admin(id):
+    connection = engine.connect()
+    Session = sessionmaker(connection)
+    session = Session()
+
+    session.begin()
+    try:
+        admin = session.query(Admin).filter((Admin.id==id)).first()
+        if admin:
+            return jsonify(admin.serialize(full=True))
+        else:
+            return jsonify({
+                "message" : 'admin not register yet' 
+            })
+    except Exception as e:
+        print(f"Error during registration: {e}")
+        db.session.rollback()
+        return {"message": "admin not found"}
 
 def admin_logout():
     current_user = get_jwt_identity()
@@ -90,3 +95,25 @@ def admin_logout():
         message = {"Logged out successfully for id": current_user},
         data = {}
     )
+
+def delete_admin(id):
+    current_user = get_jwt_identity()
+    connection = engine.connect()
+    Session = sessionmaker(connection)
+    session = Session()
+
+    session.begin()
+    try:
+        admin = session.query(Admin).filter(Admin.id == id).first()
+        if current_user != admin:
+            return 'Admin not found'
+        session.delete(admin)
+        session.commit()
+
+        return {'message': 'Admin deleted successfully'}
+    except Exception as e:
+        print(f"Error during delete admin: {e}")
+        session.rollback()
+        return {"message": "delete admin failed"}
+    finally:
+        session.close() 
