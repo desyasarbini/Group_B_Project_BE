@@ -1,4 +1,3 @@
-# from app.utils.database import db
 from app.models.base import Base
 from sqlalchemy import String, Integer, DECIMAL, DateTime, Float, ForeignKey, func
 from sqlalchemy.orm import relationship, mapped_column
@@ -16,8 +15,6 @@ class Project(Base):
     start_date = mapped_column(DateTime(timezone=True), server_default=func.now())
     end_date = mapped_column(DateTime(timezone=True), nullable=False)
     percentage = mapped_column(Float(precision=2))
-    # created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
-    # updated_at = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     donations = relationship("Donation", back_populates="to_project")
     admin = relationship("Admin", back_populates="projects")
@@ -33,9 +30,7 @@ class Project(Base):
                 'collected_amount' : self.collected_amount,
                 'start_date' : self.start_date,
                 'end_date' : self.end_date,
-                'percentage' : f"{self.percentage: .2f}%"
-                # 'created_at': self.created_at,
-                # 'update_at': self.updated_at
+                'percentage' : f"{self.percentage: .2f}"
             }
         else:
             return {
@@ -45,7 +40,7 @@ class Project(Base):
                 'project_name' : self.project_name,
                 'description' : self.description,
                 'target_amount' : self.target_amount,
-                'percentage' : f"{self.percentage: .2f}%",
+                'percentage' : f"{self.percentage: .2f}",
                 'end_date' : self.end_date
             }
 

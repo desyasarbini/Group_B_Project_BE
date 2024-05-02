@@ -1,5 +1,4 @@
 from app.models.admin import Admin
-from app.utils.database import db
 from app.utils.api_response import api_response
 from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity, create_access_token
@@ -22,9 +21,8 @@ def create_admin():
         session.add(new_admin)
         session.commit()
     except Exception as e:
-        print(f"error during registration: {e}")
-        db.session.rollback()
-        return {"message": "Create admin failed"}
+        session.rollback()
+        return jsonify(f"create admin failed: {e}")
     return api_response(
         status_code = 201, 
         message = "Create admin success!", 
@@ -84,9 +82,8 @@ def get_admin(id):
                 "message" : 'admin not register yet' 
             })
     except Exception as e:
-        print(f"Error during registration: {e}")
-        db.session.rollback()
-        return {"message": "admin not found"}
+        session.rollback()
+        return jsonify(f"get admin failed: {e}")
 
 def admin_logout():
     current_user = get_jwt_identity()
@@ -112,8 +109,7 @@ def delete_admin(id):
 
         return {'message': 'Admin deleted successfully'}
     except Exception as e:
-        print(f"Error during delete admin: {e}")
         session.rollback()
-        return {"message": "delete admin failed"}
+        return jsonify(f"delete admin failed: {e}")
     finally:
         session.close() 

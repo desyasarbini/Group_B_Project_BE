@@ -114,9 +114,6 @@ def delete_project(project_id):
 
         if project_to_delete is None:
             return jsonify({"message": "project not found"}), 404
-
-        # if project_to_delete.admin_id != current_admin:
-        #     return jsonify({"message": "you're not authorized to delete project"})
         
         session.delete(project_to_delete)
         session.commit()
@@ -135,11 +132,9 @@ def update_project(project_id):
     try:
         project_to_update = session.query(Project).filter(Project.id==project_id).first()
 
-        # project_to_update.admin_id = current_admin()
         project_to_update.project_name = request.form.get('project_name', project_to_update.project_name)
         project_to_update.description = request.form.get('description', project_to_update.description)
         project_to_update.end_date = request.form.get('end_date', project_to_update.end_date)
-        # project_to_update.updated_at = func.now()
 
         session.commit()
         return api_response(

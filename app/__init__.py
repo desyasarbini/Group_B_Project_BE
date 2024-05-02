@@ -1,6 +1,7 @@
 from flask import Flask
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 import os
 
 from app.routes.admin_route import admin_blueprint
@@ -14,6 +15,7 @@ app = Flask(__name__)
 
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 jwt = JWTManager(app)
+CORS(app)
 
 @app.route("/")
 def helloWorld():

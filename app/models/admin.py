@@ -1,9 +1,6 @@
-# from flask import current_app as app
-# from app.utils.database import db
 from app.models.base import Base
 from sqlalchemy.orm import relationship, mapped_column
 from sqlalchemy import String, Integer
-# from sqlalchemy.sql import func
 import bcrypt
 
 class Admin(Base):
