@@ -1,17 +1,13 @@
 from sqlalchemy import func
 from app.models.admin import Admin
 from app.models.project import Project
-from app.connector.sql_connector import engine
+from app.connector.sql_connector import Session
 from app.utils.api_response import api_response
 from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity
-from sqlalchemy.orm import sessionmaker
 
 def create_project():
     current_admin_id = get_jwt_identity()
-
-    connection = engine.connect()
-    Session = sessionmaker(connection)
     session = Session()
 
     session.begin()
@@ -35,18 +31,17 @@ def create_project():
         end_date = end_date
     )
 
-    if new_project.collected_amount is not None and new_project.target_amount is not None:
-        new_project.percent_calculation()
-    else:
-        # Atur persentase menjadi 0 jika collected_amount atau target_amount adalah None
-        new_project.percentage = 0
-    
     try:
         session.add(new_project)
         session.commit()
+        
+        new_project.percent_calculation()
     except Exception as e:
         session.rollback()
         return (f"login failed: {e}")
+    finally:
+        session.expunge_all()
+        session.close()
     return api_response(
         status_code = 201, 
         message = "Create project success!", 
@@ -64,8 +59,6 @@ def create_project():
 
 def get_all_project():
     response_data = dict()
-    connection = engine.connect()
-    Session = sessionmaker(connection)
     session = Session()
 
     session.begin()
@@ -81,11 +74,12 @@ def get_all_project():
         return jsonify(response_data)
 
     except Exception as e:
+        session.rollback()
         return jsonify(f"get all project failed: {e}")
+    finally:
+        session.close()
 
 def project_detail(project_id):
-    connection = engine.connect()
-    Session = sessionmaker(connection)
     session = Session()
 
     session.begin()
@@ -98,15 +92,13 @@ def project_detail(project_id):
                 "message": "project not found"
             })
     except Exception as e:
-        return jsonify({"message": "error lagi bung"})
+        session.rollback()
+        return jsonify(f"error nya disini yak! : {e}")
+    finally:
+        session.close()
 
 def delete_project(project_id):
-    current_admin = get_jwt_identity()
-
-    connection = engine.connect()
-    Session = sessionmaker(connection)
     session = Session()
-
     session.begin()
     try:
 
@@ -114,27 +106,27 @@ def delete_project(project_id):
 
         if project_to_delete is None:
             return jsonify({"message": "project not found"}), 404
-        
+
         session.delete(project_to_delete)
         session.commit()
         
         return jsonify({"message": "succefully delete project"})
     except Exception as e:
+        session.rollback()
         return jsonify(f"delete project failed: {e}"), 500
+    finally:
+        session.close()
 
 def update_project(project_id):
-    current_admin = get_jwt_identity()
-    connection = engine.connect()
-    Session = sessionmaker(connection)
     session = Session()
-
     session.begin()
     try:
         project_to_update = session.query(Project).filter(Project.id==project_id).first()
 
-        project_to_update.project_name = request.form.get('project_name', project_to_update.project_name)
-        project_to_update.description = request.form.get('description', project_to_update.description)
-        project_to_update.end_date = request.form.get('end_date', project_to_update.end_date)
+        project_to_update.project_name = request.json.get('project_name', project_to_update.project_name)
+        project_to_update.description = request.json.get('description', project_to_update.description)
+        project_to_update.end_date = request.json.get('end_date', project_to_update.end_date)
+        project_to_update.updated_at = func.now()
 
         session.commit()
         return api_response(
@@ -143,8 +135,12 @@ def update_project(project_id):
             data={
                 'project_name': project_to_update.project_name,
                 'description': project_to_update.description,
-                'end_date': project_to_update.end_date
+                'end_date': project_to_update.end_date,
+                'updated_at': project_to_update.updated_at
             }
         )
     except Exception as e:
+        session.rollback()
         return jsonify(f"update project failed: {e}"), 500
+    finally:
+        session.close()

@@ -1,8 +1,8 @@
-from flask import Flask
+import os
 from dotenv import load_dotenv
+from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
-import os
 
 from app.routes.admin_route import admin_blueprint
 from app.routes.donatur_route import donatur_blueprint
@@ -25,3 +25,6 @@ app.register_blueprint(admin_blueprint)
 app.register_blueprint(donatur_blueprint)
 app.register_blueprint(project_blueprint)
 app.register_blueprint(donation_blueprint)
+
+if __name__ == "__main__":
+    app.run()

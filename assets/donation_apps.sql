@@ -17,7 +17,7 @@ VALUES (
 SELECT * FROM donatur;
 
 CREATE TABLE admin (
-    id int PRIMARY KEY AUTO_INCREMENT, username varchar(100) NOT NULL, password varchar(100) NOT NULL
+    id int PRIMARY KEY AUTO_INCREMENT, username varchar(50) NOT NULL, password varchar(50) NOT NULL
 );
 
 INSERT INTO
@@ -28,7 +28,18 @@ VALUES ('admin', 'admin'),
 SELECT * FROM admin;
 
 CREATE TABLE project (
-    id int PRIMARY KEY AUTO_INCREMENT, project_image varchar(255) NOT NULL, project_name varchar(255) NOT NULL, description varchar(655) NOT NULL, start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, end_date TIMESTAMP, target_amount decimal(10, 2), collected_amount decimal(10, 2) default 0.00, percentage_donation decimal(5, 2) default 0.00, admin_id int, foreign key (admin_id) references admin (id)
+    id int PRIMARY KEY AUTO_INCREMENT, 
+    project_image varchar(255) NOT NULL, 
+    project_name varchar(255) NOT NULL, 
+    description varchar(655) NOT NULL,
+    target_amount DECIMAL(12,2) DEFAULT 0.00,
+    collected_amount decimal(12, 2) default 0.00,
+    percentage decimal(3, 2) default 0.00, 
+    start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    end_date TIMESTAMP,  
+    admin_id int,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    foreign key (admin_id) references admin (id)
 );
 
 DROP TABLE project;
@@ -63,7 +74,10 @@ VALUES (1, 2, 2000.00),
     (2, 2, 50000.00),
     (1, 2, 70000.00),
     (2, 2, 970000.00),
-    (1, 1, 235000.00);
+    (1, 1, 235000.00),
+    (2, 2, 970000.00),
+    (1, 1, 235000.00),
+    (1, 3, 235000.00);
 
 SELECT * FROM donation;
 

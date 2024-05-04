@@ -6,8 +6,8 @@ class Donatur(Base):
     __tablename__ = "donatur"
 
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
-    email = mapped_column(String(255), nullable=False)
-    phone_number = mapped_column(String(50), nullable=False)
+    email = mapped_column(String(100), nullable=False)
+    phone_number = mapped_column(String(20), nullable=False)
 
     donations = relationship("Donation", back_populates="from_donatur")
 

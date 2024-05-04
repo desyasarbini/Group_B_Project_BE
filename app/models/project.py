@@ -7,14 +7,15 @@ class Project(Base):
 
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
     admin_id = mapped_column(Integer, ForeignKey('admin.id'))
-    project_image = mapped_column(String(255), nullable=False)
+    project_image = mapped_column(String(525), nullable=False)
     project_name = mapped_column(String(255), nullable=False)
-    description = mapped_column(String(655), nullable=False)
-    target_amount = mapped_column(DECIMAL(10,2), nullable=False)
-    collected_amount = mapped_column(DECIMAL(10,2), server_default="0.00")
+    description = mapped_column(String(866), nullable=False)
+    target_amount = mapped_column(DECIMAL(12,2), default=0.00)
+    collected_amount = mapped_column(DECIMAL(12,2), default=0.00)
+    percentage = mapped_column(DECIMAL(3,2), default=0.00)
     start_date = mapped_column(DateTime(timezone=True), server_default=func.now())
     end_date = mapped_column(DateTime(timezone=True), nullable=False)
-    percentage = mapped_column(Float(precision=2))
+    updated_at = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     donations = relationship("Donation", back_populates="to_project")
     admin = relationship("Admin", back_populates="projects")
@@ -30,7 +31,8 @@ class Project(Base):
                 'collected_amount' : self.collected_amount,
                 'start_date' : self.start_date,
                 'end_date' : self.end_date,
-                'percentage' : f"{self.percentage: .2f}"
+                'percentage' : f"{self.percentage: .2f}",
+                'updated_at' : self.updated_at
             }
         else:
             return {
@@ -40,6 +42,7 @@ class Project(Base):
                 'project_name' : self.project_name,
                 'description' : self.description,
                 'target_amount' : self.target_amount,
+                'collected_amount': self.collected_amount,
                 'percentage' : f"{self.percentage: .2f}",
                 'end_date' : self.end_date
             }
@@ -49,6 +52,6 @@ class Project(Base):
     
     def percent_calculation(self):
         if self.target_amount != 0:
-            self.percentage = (self.collected_amount/self.target_amount)*100
+            self.percentage = (self.collected_amount / self.target_amount) * 100
         else:
-            self.percentage = 0
+            self.percentage = 0.00

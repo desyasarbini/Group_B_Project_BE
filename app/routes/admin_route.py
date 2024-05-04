@@ -15,6 +15,6 @@ admin_blueprint.route("/admin", methods=["POST"])(create_admin)
 
 admin_blueprint.route("/admin/login", methods=["POST"])(do_admin_login)
 
-admin_blueprint.route("/admin/<id>", methods=["DELETE"])(delete_admin)
+admin_blueprint.route("/admin/<id>", methods=["DELETE"])(jwt_required()(delete_admin))
 
 admin_blueprint.route("/admin/logout", methods=["GET"])(jwt_required()(admin_logout))

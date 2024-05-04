@@ -2,9 +2,31 @@ from app.models.donation import Donation
 from app.models.project import Project
 from app.models.donatur import Donatur
 from app.utils.api_response import api_response
-from app.connector.sql_connector import engine
-from sqlalchemy.orm import sessionmaker
+from app.connector.sql_connector import Session
 from flask import jsonify, request
+
+def donation_detail(donation_id):
+    session = Session()
+    session.begin()
+    try:
+        donation = session.query(Donation).filter(Donation.id == donation_id).first()
+        if donation:
+            return api_response(
+                status_code=200,
+                message="get donation detail success!",
+                data={
+                    'id': donation.id
+                }
+            )
+        else:
+            return jsonify({
+                "message" : 'donation not found' 
+            })
+    except Exception as e:
+        session.rollback()
+        return jsonify({"message": "error lagi bung untuk donation detail yak!"})
+    finally:
+        session.close()
 
 def create_donation():
     donatur_id = request.json.get("donatur_id", None)
@@ -12,10 +34,7 @@ def create_donation():
     amount = request.json.get("amount", None)
     donation_date = request.json.get("donation_date")
 
-    connection = engine.connect()
-    Session = sessionmaker(connection)
     session = Session()
-
     try:
         session.begin()
 
@@ -57,3 +76,5 @@ def create_donation():
     except Exception as e:
         session.rollback()
         return jsonify({"error": f"Failed to create donation: {str(e)}"})
+    finally:
+        session.close()

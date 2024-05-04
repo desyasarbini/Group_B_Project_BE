@@ -7,8 +7,8 @@ class Admin(Base):
     __tablename__ = "admin"
 
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
-    username = mapped_column(String(20), nullable=False, unique=True)
-    password = mapped_column(String(20), nullable=False)
+    username = mapped_column(String(255), nullable=False, unique=True)
+    password = mapped_column(String(255), nullable=False)
 
     projects = relationship("Project", back_populates="admin")
 

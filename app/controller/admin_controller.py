@@ -2,7 +2,7 @@ from app.models.admin import Admin
 from app.utils.api_response import api_response
 from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity, create_access_token
-from app.connector.sql_connector import engine
+from app.connector.sql_connector import engine, Session
 from sqlalchemy.orm import sessionmaker
 
 def create_admin():
@@ -12,10 +12,7 @@ def create_admin():
     new_admin = Admin(username = username)
     new_admin.set_password(password)
 
-    connection = engine.connect()
-    Session = sessionmaker(connection)
     session = Session()
-
     session.begin()
     try:
         session.add(new_admin)
@@ -23,6 +20,8 @@ def create_admin():
     except Exception as e:
         session.rollback()
         return jsonify(f"create admin failed: {e}")
+    finally:
+        session.close()
     return api_response(
         status_code = 201, 
         message = "Create admin success!", 
@@ -33,10 +32,7 @@ def do_admin_login():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
 
-    connection = engine.connect()
-    Session = sessionmaker(connection)
     session = Session()
-
     session.begin()
     try:
         admin = session.query(Admin).filter(Admin.username == username).first()
@@ -66,12 +62,11 @@ def do_admin_login():
     except Exception as e:
         session.rollback()
         return jsonify(f"login failed: {e}")
+    finally:
+        session.close()
 
 def get_admin(id):
-    connection = engine.connect()
-    Session = sessionmaker(connection)
     session = Session()
-
     session.begin()
     try:
         admin = session.query(Admin).filter((Admin.id==id)).first()
@@ -84,6 +79,8 @@ def get_admin(id):
     except Exception as e:
         session.rollback()
         return jsonify(f"get admin failed: {e}")
+    finally:
+        session.close()
 
 def admin_logout():
     current_user = get_jwt_identity()
@@ -94,17 +91,14 @@ def admin_logout():
     )
 
 def delete_admin(id):
-    current_user = get_jwt_identity()
-    connection = engine.connect()
-    Session = sessionmaker(connection)
     session = Session()
-
     session.begin()
     try:
-        admin = session.query(Admin).filter(Admin.id == id).first()
-        if current_user != admin:
-            return 'Admin not found'
-        session.delete(admin)
+        admin_to_delete = session.query(Admin).filter(Admin.id == id).first()
+        if admin_to_delete is None:
+            return jsonify({"message": "admin not found"}), 404
+        
+        session.delete(admin_to_delete)
         session.commit()
 
         return {'message': 'Admin deleted successfully'}

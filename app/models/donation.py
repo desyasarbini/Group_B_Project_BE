@@ -8,7 +8,7 @@ class Donation(Base):
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
     project_id = mapped_column(Integer, ForeignKey('project.id'))
     donatur_id = mapped_column(Integer, ForeignKey('donatur.id'))
-    amount = mapped_column(DECIMAL(10,2))
+    amount = mapped_column(DECIMAL(12,2))
     donation_date = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     to_project = relationship("Project", back_populates="donations")
