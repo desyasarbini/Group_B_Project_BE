@@ -60,7 +60,6 @@ def create_project():
 def get_all_project():
     response_data = dict()
     session = Session()
-
     session.begin()
     try:
         project_query = session.query(Project)
@@ -81,7 +80,6 @@ def get_all_project():
 
 def project_detail(project_id):
     session = Session()
-
     session.begin()
     try:
         project = session.query(Project).filter((Project.id==project_id)).first()

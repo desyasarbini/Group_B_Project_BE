@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required
 from app.controller.admin_controller import (
     create_admin, 
     do_admin_login,
+    get_all_admin,
     get_admin,  
     delete_admin,
     admin_logout)
@@ -14,6 +15,8 @@ admin_blueprint.route("/admin/<id>", methods=["GET"])(get_admin)
 admin_blueprint.route("/admin", methods=["POST"])(create_admin)
 
 admin_blueprint.route("/admin/login", methods=["POST"])(do_admin_login)
+
+admin_blueprint.route("/admin/all-admin", methods=["GET"])(jwt_required()(get_all_admin))
 
 admin_blueprint.route("/admin/<id>", methods=["DELETE"])(jwt_required()(delete_admin))
 

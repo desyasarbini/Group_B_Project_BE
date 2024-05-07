@@ -65,6 +65,26 @@ def do_admin_login():
     finally:
         session.close()
 
+def get_all_admin():
+    response_data = dict()
+    session = Session()
+    session.begin()
+    try:
+        admin_query = session.query(Admin)
+        if request.args.get('query') != None:
+            search_query = request.args.get('query')
+            admin_query = admin_query.filter(Admin.username.like(f"%{search_query}%"))
+        
+        admins = admin_query.all()
+        response_data['admins'] = [admin.serialize(full=False) for admin in admins]
+        return jsonify(response_data)
+
+    except Exception as e:
+        session.rollback()
+        return jsonify(f"get all admin failed: {e}")
+    finally:
+        session.close()
+
 def get_admin(id):
     session = Session()
     session.begin()
