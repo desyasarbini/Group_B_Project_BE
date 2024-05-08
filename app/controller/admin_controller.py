@@ -1,22 +1,36 @@
+from pydantic import ValidationError
 from app.models.admin import Admin
 from app.utils.api_response import api_response
 from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity, create_access_token
-from app.connector.sql_connector import engine, Session
-from sqlalchemy.orm import sessionmaker
+from app.connector.sql_connector import Session
+from app.validations.admin_validation import AdminCreate, AdminLogin
 
 def create_admin():
-    username = request.json.get("username", None)
-    password = request.json.get("password", None)
+    # validation start
+    try:
+        admin_data = AdminCreate(**request.json)
+    except ValidationError as e:
+        return jsonify(f"Validation error occurred: {e}")
+
+    username = admin_data.username
+    password = admin_data.password
+    # validation end
+
+    session = Session()
+    
+    existing_admin = session.query(Admin).filter(Admin.username == username).first()
+    if existing_admin:
+        return jsonify(f"Username '{username}' already exists. Please choose a different username.")
 
     new_admin = Admin(username = username)
     new_admin.set_password(password)
 
-    session = Session()
     session.begin()
     try:
         session.add(new_admin)
         session.commit()
+        session.refresh(new_admin)
     except Exception as e:
         session.rollback()
         return jsonify(f"create admin failed: {e}")
@@ -29,8 +43,15 @@ def create_admin():
     )
 
 def do_admin_login():
-    username = request.json.get("username", None)
-    password = request.json.get("password", None)
+    # validation start
+    try:
+        login_data = AdminLogin(**request.json)
+    except ValidationError as e:
+        return jsonify(f"Validation error occurred: {e}")
+    # validation end
+    
+    username = login_data.username
+    password = login_data.password
 
     session = Session()
     session.begin()

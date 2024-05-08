@@ -1,8 +1,10 @@
+from datetime import datetime
+from pydantic import ValidationError
 from app.models.donation import Donation
 from app.models.project import Project
-# from app.models.donatur import Donatur
 from app.utils.api_response import api_response
 from app.connector.sql_connector import Session
+from app.validations.donation_validation import DonationCreate
 from flask import jsonify, request
 
 def donation_detail(donation_id):
@@ -31,24 +33,21 @@ def donation_detail(donation_id):
         session.close()
 
 def create_donation():
-    project_id = request.json.get("project_id", None)
-    email = request.json.get("email", None)
-    phone_number = request.json.get("phone_number", None)
-    amount = request.json.get("amount", None)
-    donation_date = request.json.get("donation_date")
+    try:
+        donation_data = DonationCreate(**request.json)
+    except ValidationError as e:
+        return jsonify(f"Validation error occurred: {e}")
+
+    project_id = donation_data.project_id
+    email = donation_data.email
+    phone_number = donation_data.phone_number
+    amount = donation_data.amount
+    donation_date = datetime.now()
 
     session = Session()
     try:
         session.begin()
-
-        # donatur = session.query(Donatur).filter(Donatur.id==donatur_id).first()
         project = session.query(Project).filter(Project.id==project_id).first()
-        # if donatur is None:
-        #     return api_response(
-        #         status_code=400,
-        #         message="Donatur not found, please fill the donatur data first",
-        #         data={}
-        #     )
         if project is None:
             return api_response(
                 status_code=400,
