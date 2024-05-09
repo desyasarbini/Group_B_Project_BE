@@ -1,11 +1,11 @@
-from datetime import datetime
-from pydantic import ValidationError
+# from datetime import datetime
+# from pydantic import ValidationError
 from sqlalchemy import func
 from app.models.admin import Admin
 from app.models.project import Project
 from app.connector.sql_connector import Session
 from app.utils.api_response import api_response
-from app.validations.project_validation import ProjectCreate, ProjectUpdate
+# from app.validations.project_validation import ProjectCreate, ProjectUpdate
 from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity
 
@@ -14,18 +14,15 @@ def create_project():
     session = Session()
     session.begin()
 
-    try:
-        project_data = ProjectCreate(**request.json)
-    except ValidationError as e:
-        return jsonify(f"Validation error occurred: {e}")
-
     admin = session.query(Admin).filter(Admin.id == current_admin_id).first()
     if admin is None:
         return jsonify({"message": "You don't have permission to create a project"}), 403
-
-    project_image = project_data.project_image
-    project_name = project_data.project_name
-    description = project_data.description
+    
+    project_image = request.json.get("project_image", None)
+    project_name = request.json.get("project_name", None)
+    description = request.json.get("description", None)
+    target_amount = float(request.json.get("target_amount", None))
+    end_date = request.json.get("end_date", None)
 
     new_project = Project (
         admin_id = current_admin_id,
@@ -126,16 +123,10 @@ def update_project(project_id):
     try:
         project_to_update = session.query(Project).filter(Project.id==project_id).first()
 
-        try:
-            update_data = ProjectUpdate(**request.json)
-        except ValidationError as e:
-            return jsonify(f"Validation error occurred: {e}")
-        
-        if update_data.project_name is not None:
-            project_to_update.project_name = update_data.project_name
-        if update_data.description is not None:
-            project_to_update.description = update_data.description
-        project_to_update.updated_at = datetime.now()
+        project_to_update.project_name = request.json.get('project_name', project_to_update.project_name)
+        project_to_update.description = request.json.get('description', project_to_update.description)
+        project_to_update.end_date = request.json.get('end_date', project_to_update.end_date)
+        project_to_update.updated_at = func.now()
 
         session.commit()
         return api_response(
