@@ -26,8 +26,6 @@ def create_project():
     project_image = project_data.project_image
     project_name = project_data.project_name
     description = project_data.description
-    target_amount = project_data.target_amount
-    end_date = project_data.end_date
 
     new_project = Project (
         admin_id = current_admin_id,
@@ -137,8 +135,6 @@ def update_project(project_id):
             project_to_update.project_name = update_data.project_name
         if update_data.description is not None:
             project_to_update.description = update_data.description
-        if update_data.end_date is not None:
-            project_to_update.end_date = update_data.end_date
         project_to_update.updated_at = datetime.now()
 
         session.commit()
