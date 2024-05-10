@@ -14,7 +14,7 @@ app = Flask(__name__)
 
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 jwt = JWTManager(app)
-CORS(app, origins='http://localhost:3000', supports_credentials=True)
+CORS(app, origins=['http://localhost:3000', 'https://www.luv2read.site/', 'https://group-b-project-fe.vercel.app/'], supports_credentials=True)
 
 @app.route("/")
 def helloWorld():
