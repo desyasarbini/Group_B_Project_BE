@@ -14,7 +14,7 @@ class Project(Base):
     collected_amount = mapped_column(DECIMAL(12,2), default=0.00, nullable=False)
     percentage = mapped_column(DECIMAL(3,2), default=0.00, nullable=False)
     start_date = mapped_column(DateTime(timezone=True), server_default=func.now())
-    end_date = mapped_column(Integer, nullable=False)
+    end_date = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     donations = relationship("Donation", back_populates="to_project")
