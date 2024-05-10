@@ -6,7 +6,7 @@ class Project(Base):
     __tablename__ = "project"
 
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
-    admin_id = mapped_column(Integer, ForeignKey('admin.id'))
+    admin_id = mapped_column(Integer, ForeignKey('admin.id', ondelete="CASCADE"))
     project_image = mapped_column(String(525), nullable=False)
     project_name = mapped_column(String(255), nullable=False)
     description = mapped_column(String(866), nullable=False)
@@ -31,7 +31,7 @@ class Project(Base):
                 'collected_amount' : self.collected_amount,
                 'start_date' : self.start_date,
                 'end_date' : self.end_date,
-                'percentage' : f"{self.percentage: .2f}",
+                'percentage' : self.percentage,
                 'updated_at' : self.updated_at
             }
         else:

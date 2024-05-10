@@ -6,7 +6,7 @@ class Donation(Base):
     __tablename__ = "donation"
 
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
-    project_id = mapped_column(Integer, ForeignKey('project.id'))
+    project_id = mapped_column(Integer, ForeignKey('project.id', ondelete="CASCADE"))
     email = mapped_column(String(100), nullable=False)
     phone_number = mapped_column(String(20), nullable=False)
     amount = mapped_column(DECIMAL(12,2), nullable=False )
